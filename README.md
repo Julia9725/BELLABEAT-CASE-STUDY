@@ -82,15 +82,137 @@ weight <- read.csv("weightLogInfo_merged.csv")
 | 4    |            2.83          |             0             |   29                |
 | 5    |            5.04          |             0             |   36                |
 | 6    |            2.51          |             0             |   38                |
-|**NO**|   **FairlyActiveMinutes**| **LightlyActiveMinutes**| **SedentaryMinutes**| **Calories**|
-| 1    |              13          |        328              |        728                     1985
-| 2    |              19          |        217                      776                      1797
-| 3    |              11          |        181                      1218                      1776
-| 4    |              34          |        209                       726                      1745
-| 5    |              10          |        221                       773                      1863
-|6     |             20           |       164                       539                        1728  
+|**NO**|   **FairlyActiveMinutes**| **LightlyActiveMinutes**| **SedentaryMinutes**| **Calories**    |
+| 1    |              13          |        328              |        728          |           1985  |
+| 2    |              19          |        217              |        776          |            1797 |
+| 3    |              11          |        181              |        1218         |             1776|
+| 4    |              34          |        209              |         726         |             1745|
+| 5    |              10          |        221              |         773         |             1863|
+|6     |             20           |       164               |        539          |             1728|  
 
   ```r
 
       
+```r
+# then the daily_sleep data
+head(daily_sleep)
+```
+|**NO** |    **Id** |         **SleepDay** |     **TotalSleepRecords** |**TotalMinutesAsleep**|
+|-------|-----------|----------------------|---------------------------|----------------------|
+|    1  | 1503960366| 4/12/2016 12:00:00 AM|                1          |     327              |
+|     2 | 1503960366| 4/13/2016 12:00:00 AM|                 2         |       384            |
+|     3 | 1503960366| 4/15/2016 12:00:00 AM|                 1         |       412            |
+|     4 | 1503960366| 4/16/2016 12:00:00 AM|                 2         |       340            |
+|     5 | 1503960366| 4/17/2016 12:00:00 AM|                 1         |       700            |
+|     6 | 1503960366| 4/19/2016 12:00:00 AM|                 1         |       304            |
+| **NO** |            TotalTimeInBed|
+|    1   |         346              |
+|    2   |         407              |
+|    3   |         442              |
+|    4   |         367              |
+|    5   |         712              |
+|    6   |         320              |
 
+```r
+# And, the hourly_steps data
+head(hourly_steps)
+```
+| **NO**|   **Id** |    **ActivityHour**   |   **StepTotal**|
+|-------|----------|-----------------------|----------------|
+|     1 |1503960366|  4/12/2016 12:00:00 AM|       373      | 
+|     2 |1503960366|  4/12/2016 1:00:00 AM |      160       |
+|     3 |1503960366|  4/12/2016 2:00:00 AM |      151       |
+|     4 |1503960366|  4/12/2016 3:00:00 AM |        0       |
+|     5 |1503960366|  4/12/2016 4:00:00 AM |        0       |
+|     6 |1503960366|  4/12/2016 5:00:00 AM |        0       |
+
+```r
+# Finaly, the weight data
+head(weight)
+```
+| **NO** |   **Id**   |   **Date**           | **WeightKg**|  **WeightPounds**| **Fat** | **BMI**| **IsManualReport**|
+|--------|------------|----------------------|-------------|------------------|---------|--------|-------------------|
+| 1      |  1503960366| 05/02/2016 23:59…    |  52.6       |  116.            |  22     |    22.6|      TRUE         | 
+| 2      |  1503960366| 05/03/2016           |   52.6      |   116.           | NA      |    22.6|       TRUE        |  
+|3       |  1927972279| 4/13/2016 1:08:52 AM |   134.      |    294.          | NA      |    47.5|       FALSE       |   
+| 4      |  2873212765| 4/21/2016 11:59:59 PM|   56.7      |  125.            | NA      |   21.5 |       TRUE        |   
+| 5      |  2873212765| 05/12/2016 23:59     | 57.3        |   126.           | NA      |   21.7 |        TRUE       |  
+| 6      |  4319703577|4/17/2016 11:59:59 PM |   72.4      |   160.           | 25      |   27.5 |       TRUE        |
+                      
+```r
+Next we check for null or missing values in the dataset.We use the function is.null()
+
+```r
+# checking and removing or null or missing value.
+
+daily_Activity %>% is.null()
+FALSE
+weight %>% is.null()
+FALSE
+hourly_steps %>% is.null()
+FALSE
+daily_sleep %>% is.null()
+FALSE
+```r
+Duplicate records are removed in each dataset. This is achieved using the function .duplicated()
+
+```r
+# remove duplicated records
+
+daily_Activity %>% distinct()
+weight %>% distinct()
+hourly_steps %>% distinct()
+daily_sleeP %>% distinct()
+```
+
+Lets find the  number of participants in each data set by counting
+    distinct IDs
+``` r
+n_distinct(daily_activity$Id)
+```
+
+    ## [1] 33
+
+``` r
+n_distinct(hourly_steps$Id)
+```
+
+    ## [1] 33
+
+``` r
+n_distinct(daily_sleep$Id)
+```
+
+    ## [1] 24
+
+``` r
+n_distinct(weight$Id)
+```
+
+    ## [1] 8
+
+Because very few participants contributed weight data, we will
+exclude it from our analysis.
+
+# Data Transformation
+   Now that the data is clean, we will then perform data manipulation/transformation.
+
+First let’s rename the ActivityDate, ActivityHour and SleepDay columns for readability purposes.
+
+```r
+"#Lets Rename these columns for proper readabilty,
+
+ ```r
+  colnames(daily_Activity)[2]="date"
+ colnames(Daily_sleep)[2]="date"
+ colnames(hourly_Steps)[2]="time"  
+    ```
+Let’s convert these renamed columns- Date, Time to DateTime
+
+```r
+colnames(daily_Activity)[2]="datetime"
+ colnames(Daily_sleep)[2]="datetime"
+ colnames(hourly_Steps)[2]="datetime"
+  ```
+ # ANALYSIS
+ 
