@@ -216,3 +216,102 @@ colnames(daily_Activity)[2]="datetime"
   ```
  # ANALYSIS
  
+``` r
+mean(daily_Activity$TotalSteps)
+[1] 7637.911
+mean(daily_Activity$TotalDistance)
+[1] 5.489702
+sd(daily_Activity$TotalSteps)
+[1] 5087.151
+ sd(daily_Activity$TotalDistance)
+[1] 3.924606
+min(daily_Activity$TotalSteps)
+[1] 0
+ max(daily_Activity$TotalSteps)
+[1] 36019
+ min(daily_Activity$TotalDistance)
+[1] 0
+ max(daily_Activity$TotalDistance)
+[1] 28.03
+mean(daily_Activity$SedentaryMinutes)
+[1] 991.2106
+```
+# Statistical findings:
+
+*The total steps taken by the users on an average is 7677 steps and at an average distance of 5.4 km.
+*The users spend 992 minutes sedentary (idle) on an average which is 16 hours 32 minutes. This means that active minutes is 448 which is 7 hours 28 minutes.
+
+daily_sleep
+```r
+What is the average amount of sleep for each participant?
+
+``` r
+mean_sleep <- daily_sleep %>%
+  group_by(Id) %>%
+  summarize(mean_sleep = mean(TotalMinutesAsleep)) %>%
+  select(Id, mean_sleep) %>%
+  arrange(mean_sleep) %>%
+  as.data.frame()
+head(mean_sleep)
+```
+
+| **NO** |   **Id** |   **mean_sleep**|
+|--------|----------|-----------------|
+|     1  |2320127002|    61.0000      |
+|     2  |7007744171|    68.5000      |
+|     3  |4558609924|   127.6000      |
+|    4   |3977333714|   293.6429      |
+|     5  |1644430081|   294.0000      |
+|     6  |8053475328|   297.0000      |
+
+- What percent of the time did participants actually spend sleeping
+  while laying in bed?
+
+``` r
+daily_sleep %>%
+  group_by(Id) %>%
+  mutate(percent_sleep = (TotalMinutesAsleep/TotalTimeInBed)*100) %>%
+  select(Id, percent_sleep) %>%
+  summarize(avg_persleep = mean(percent_sleep)) %>%
+  arrange(avg_persleep) %>%
+  mutate_if(is.numeric, round, 2)
+```
+
+|**NO**|  **Id**  | **avg_persleep**|
+|------|----------|-----------------|                                 
+|   1 | 3977333714|         63.4    |
+|   2 | 1844505072|         67.8    |
+|   3 | 1644430081|        88.2     |
+|   4 | 2320127002|         88.4    |
+|   5 | 4558609924|         90.7    |
+|   6 | 2347167796|         91.0    |
+|  7  | 5553957443|         91.5    |
+|   8 | 8378563200|        91.9     |
+|   9 | 4445114986|         92.5    |
+|   10| 4020332650|         93.0    |
+      ...with 14 more rows
+  ```
+Most participants slept for at least 90% of the time they spent in bed, with
+   only 4 participants spending a smaller percent of time sleeping, the lowest
+  being 63.37%
+```
+
+
+
+
+
+
+
+
+
+
+
+**NO**      **Id**     **sum_very**  sum_fairly  sum_lightly sum_sed
+1       1503960366     1200        594        6818   26293
+2        1624580081      269        180        4758   38990
+3         1644430081      287        641        5354   34856
+4          1844505072        4         40        3579   37405
+5           1927972279       41         24        1196   40840
+6             2022484408     1125        600        7981   34490
+
+ 
