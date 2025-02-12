@@ -1,4 +1,4 @@
-# BELLABEAT-CASE-STUDY
+
 # INTRODUCTION
 Bellabeat is a high-tech manufacturer of health-focused products for women. It is a successful small company, but they have the potential to become a larger player in the global smart device market. Collecting data on activity, sleep, stress, and reproductive health empowers women with knowledge about their own health and habits. Since it was founded in 2013, Bellabeat has grown rapidly and quickly positioned itself as a tech-driven wellness company for women.
 In order to adequately analyze these data to answer the key business questions and make recommendations, I will follow the key steps of Data Analysis Process: Ask, Prepare, Process, Analyze, Share and Act.
@@ -297,21 +297,393 @@ Most participants slept for at least 90% of the time they spent in bed, with
 ```
 
 
+```r
+activity_id <- daily_activity %>%
+  group_by(Id) %>%
+  summarize(sum_very = sum(VeryActiveMinutes),
+            sum_fairly = sum(FairlyActiveMinutes),
+            sum_lightly = sum(LightlyActiveMinutes),
+            sum_sed = sum(SedentaryMinutes)) %>%
+  select(Id, sum_very, sum_fairly, sum_lightly, sum_sed) %>%
+  as.data.frame()
+head(activity_id)
+```
 
 
 
 
-
-
-
-
-
-**NO**      **Id**     **sum_very**  sum_fairly  sum_lightly sum_sed
-1       1503960366     1200        594        6818   26293
-2        1624580081      269        180        4758   38990
-3         1644430081      287        641        5354   34856
-4          1844505072        4         40        3579   37405
-5           1927972279       41         24        1196   40840
-6             2022484408     1125        600        7981   34490
+|**NO**|      **Id** |  **sum_very**| **sum_fairly**|  **sum_lightly**| **sum_sed**|
+|------|-------------|--------------|---------------|-----------------|------------|
+|1     |  1503960366 |    1200      |  594          |   6818          |  26293     |
+|2     |   1624580081|     269      |  180          |  4758           |  38990     |
+|3     |   1644430081|      287     |   641         |  5354           |  34856     |
+|4     |   1844505072|        4     |    40         | 3579            |  37405     |
+|5     |   1927972279|       41     |    24         | 1196            |   40840    |
+|6     |   2022484408|    1125      |  600          |  7981           |   34490    |
 
  
+
+
+## Steps
+
+- On average, during which hour of the day were the most steps taken?
+
+``` r
+hourly_steps %>%
+  group_by(datetime) %>%
+  summarize(mean_steps = mean(StepTotal)) %>%
+  select(datetime, mean_steps) %>%
+  arrange(desc(mean_steps)) %>%
+  head(1)
+```
+ A tibble: 1 × 2
+  datetime             mean_steps
+  <chr>                     <dbl>
+1 4/27/2016 6:00:00 PM      1153.
+    
+
+``` r
+# Answer: 6:00PM with an average of about 1153 steps
+# Creating a dataframe with average hourly steps for later visualization
+mean_steps <- hourly_steps %>%
+  group_by(Hour) %>%
+  summarize(mean_steps = mean(StepTotal)) %>%
+  select(Hour, mean_steps) %>%
+  arrange(desc(Hour)) %>%
+  as.data.frame()
+```
+
+- What is the mean and standard deviation for total steps taken by
+  participant?
+
+``` r
+steps_byId <- hourly_steps %>%
+  group_by(Id) %>%
+  summarize(mean_steps_id = mean(StepTotal), sd_steps_id = sd(StepTotal)) %>%
+  mutate_if(is.numeric, round, 2) %>%
+  as.data.frame()
+head(steps_byId)
+```
+
+    ##           Id mean_steps_id sd_steps_id
+    ## 1 1503960366        522.38      836.48
+    ## 2 1624580081        241.51      760.46
+    ## 3 1644430081        307.81      589.61
+    ## 4 1844505072        109.36      232.06
+    ## 5 1927972279         38.59      164.17
+    ## 6 2022484408        477.87      861.30
+
+
+```r
+    steps_byId <- hourly_steps %>%
+  group_by(Id) %>%
+  summarize(mean_steps_id = mean(StepTotal), sd_steps_id = sd(StepTotal)) %>%
+  mutate_if(is.numeric, round, 2) %>%
+  as.data.frame()
+head(steps_byId)
+```
+
+|**NO**|   **Id**  | **mean_steps_id**| **sd_steps_id**|
+|------|-----------|------------------|----------------|
+|     1| 1503960366|        522.38    |  836.48        |
+|     2| 1624580081|        241.51    |  760.46        |
+|     3|1644430081 |       307.81     | 589.61         |
+|     4| 1844505072|        109.36    |  232.06        |
+|     5| 1927972279|         38.59    |  164.17        |
+|     6| 2022484408|        477.87    |  861.30        |
+
+
+# SHARE
+
+   # DATA VISUALIZATION
+   
+ Relationship between steps taken in a day and sedentary minutes:
+
+``` r
+ggplot(data=daily_activity, aes(x=TotalSteps, y=SedentaryMinutes)) + 
+  geom_point() + 
+  geom_smooth() + 
+  labs(title="Total Steps vs. Sedentary Minutes",
+       x = "Steps", y = "Minutes"
+
+```
+
+
+![](Google-Analytics-Case-Study--1-_files/figure-gfm/unnamed-chunk-15-1.png)<!-- -->
+![unnamed-chunk-15-1]![image](https://github.com/user-attachments/assets/6eb1ab44-9a0a-4c2a-95b4-38219301006c)
+
+
+```r
+sed_steps_lr <-lm(SedentaryMinutes ~ TotalSteps, daily_activity)
+summary(sed_steps_lr)
+
+```
+
+Call:
+lm(formula = SedentaryMinutes ~ TotalSteps, data = daily_Activity)
+
+Residuals:
+|**Min**    |**1Q**  |**Median** | **3Q** | **Max** |
+|-----------|--------|-----------|--------|---------|
+|-1139.0    |-237.9  |  104.4    |   242.7 |  579.2 |
+
+```R
+
+Coefficients:
+
+|   **NO** |   **Estimate**| **Std. Error** |  **t value** |    **Pr(>|t)** |
+|----------|---------------|----------------|--------------|----------------|
+|Intercept |    1.139e+03  |  1.676e+01     |       67.97  |    <2e-16      |
+|TotalSteps| -1.939e-02    | 1.827e-03      |     -10.62   |    <2e-16      | 
+
+```
+##Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+##Residual standard error: 284.8 on 938 degrees of freedom
+##Multiple R-squared:  0.1072,	Adjusted R-squared:  0.1063 
+##F-statistic: 112.7 on 1 and 938 DF,  p-value: < 2.2e-16
+
+Results confirm little correlation, with an r^2 value of .11
+
+Average amount of time participants slept each night during the
+    course of the study:
+
+``` r
+# Graph the results
+options(scipen = 999)
+ggplot(mean_sleep, aes(x = Id, y = mean_sleep)) +
+  geom_col(aes(reorder(Id, +mean_sleep), y = mean_sleep)) +
+  labs(title = "Average Minutes of Sleep", x = "Participant Id", y = "Minutes") +
+  theme(axis.text.x = element_text(angle = 90)) +
+  geom_hline(yintercept = mean(mean_sleep$mean_sleep), color = "red")
+
+```
+![](Google-Analytics-Case-Study--1-_files/figure-gfm/unnamed-chunk-17-1.png)<!-- -->
+![unnamed-chunk-17-1](https://user-images.githubusercontent.com/102825218/236005780-8306a808-0a37-4d30-ac60-b20a558eff5b.png)
+
+The graph shows the average sleep of each participant individually, as
+well as how their sleep compares to the overall average across all
+participants.
+
+  Average steps per hour:
+
+``` r
+ggplot(mean_steps, aes(x = Hour, y = mean_steps)) +
+  geom_col(aes(reorder(Hour, +mean_steps), mean_steps)) +
+  theme(axis.text.x = element_text(angle = 90)) +
+  labs(title = "Average Steps Taken per Hour of Day",
+       x = "Hour", y = "Average Steps")
+```
+
+![](Google-Analytics-Case-Study--1-_files/figure-gfm/unnamed-chunk-18-1.png)<!-- -->
+![unnamed-chunk-18-1](https://user-images.githubusercontent.com/102825218/236005815-3fa7e215-a91a-4b09-a445-10641ea4eaaf.png)
+
+
+We can see that the most steps were taken in the evening, from 5-7pm,
+and the least steps in the middle of the night, between 12-4am.
+
+  I’m going to combine two datasets I created previously, activity_id
+    and steps_byId, in order to find new relationships between
+    variables.
+
+``` r
+combined_data <- merge(activity_id, steps_byId, by = "Id")
+
+# Putting just the numerical variables into a separate dataframe, then running a correlation matrix
+num_data <- combined_data[-1]
+cor(num_data)
+```
+| **NO**     |  **sum_very** |    **sum_fairly**| **sum_lightly**|     **sum_sed**|
+|------------|---------------|------------------|----------------|----------------|
+|sum_very    |  1.0000000000 | 0.3268628        |  0.09136979    |    0.0007269492|
+|sum_fairly  |  0.3268628008 | 1.0000000        | 0.11920201     |   -0.1434781695|
+|sum_lightly |  0.0913697925 | 0.1192020        | 1.00000000     |   -0.0173480833|
+|sum_sed     |  0.0007269492 |-0.1434782        |-0.01734808     |    1.0000000000|
+|mean_steps_id| 0.7012415041 | 0.4747161        | 0.51887997     |   -0.1894858225|
+|sd_steps_id |  0.7240985698 | 0.4586634        |  0.26484683    |   -0.0341737462|
+|  **NO**    | **mean_steps_id**|   **sd_steps_id**|
+|sum_very    |      0.7012415    |  0.72409857     |
+|sum_fairly  |      0.4747161    |  0.45866338     |
+|sum_lightly |      0.5188800    |  0.26484683     |
+|sum_sed     |     -0.1894858    |  -0.03417375    |
+|mean_steps_id|     1.0000000    |   0.91264532    |
+|sd_steps_id  |     0.9126453    |  1.00000000     |
+
+```
+
+```r
+
+# Based on the correlation matrix, there is little correlation between the different activity levels, but there is a moderate (.7) correlation between mean steps taken and very active minutes.
+
+ggplot(combined_data, aes(x = mean_steps_id, y = sum_very)) + 
+  geom_point() +
+  labs(title = "Average Steps Taken in a Day Compared to Very Active Minutes",
+       x = "Average Steps", y = "Very Active Minutes")
+
+```
+
+![image](https://github.com/user-attachments/assets/6f330903-c8df-4613-af01-302371a2b585)
+
+
+We can see a moderate upwards trend of “very active minutes” increasing
+as average steps in a day increases.
+
+
+```R
+#Relationship between total distance and total steps
+ggplot(data = daily_Activity) +
+  geom_point(mapping = aes(x = TotalDistance, y = TotalSteps, color = Calories)) +
+ geom_smooth(mapping = aes(x = TotalDistance, y = TotalSteps)) +
+  labs(title = 'Total Distance vs. Total Steps',
+           x = 'Total Distance',
+           y = 'Total Steps')  +
+theme(axis.text.x =  element_text(size = 10, color = 'gray40'),
+      axis.text.y =  element_text(size = 10, color = 'gray40'),
+      axis.title = element_text(size = 10, color = 'grey20'),
+      plot.title = element_text(size = 14, color = 'darkblue', face = 'bold'))      
+
+
+```
+
+![image](https://github.com/user-attachments/assets/defc374d-ba8b-40c0-9c77-1bded70cf060)
+
+
+```R
+# Creating a scatter plot with a smooth line to explore the positive correlation between sedentary time and total steps
+ggplot(data = daily_act_df) +
+  geom_smooth( mapping = aes(x=total_steps, y= sedentary_minutes)) + 
+  labs(title = 'Total steps vs Sedentary time', 
+       x = 'Total Steps', 
+       y = 'Sedentary minutes') + 
+  theme_bw()
+
+
+
+```
+
+![image](https://github.com/user-attachments/assets/88d239aa-6918-4fcb-9551-4aa8da96c041)
+
+There is a positive correlation observed between the number of steps taken and sedentary time. It appears that individuals who take more steps tend to have lower sedentary time.
+
+#Analyzing the Relationship Between Sleep Duration and Total Step Count,
+We are merging both datasets by the ‘id’ numbers; dailyActivity_merged.csv’ and ‘sleepDay_merged.csv’ datasets
+```r
+#Inner join the datasets by id numbers
+combined_data_df <- merge(daily_Sleep, daily_Activity)
+colnames(combined_data_df)
+
+ ##  [1] "id"                         "sleep_day"                 
+##  [3] "total_sleep_records"        "total_minutes_asleep"      
+##  [5] "total_time_in_bed"          "activity_date"             
+##  [7] "total_steps"                "total_distance"            
+##  [9] "tracker_distance"           "logged_activities_distance"
+## [11] "very_active_distance"       "moderately_active_distance"
+## [13] "light_active_distance"      "sedentary_active_distance" 
+## [15] "very_active_minutes"        "fairly_active_minutes"     
+## [17] "lightly_active_minutes"     "sedentary_minutes"         
+## [19] "calories"
+
+```r
+
+cat('# of participants:', n_distinct(combined_data_df$id))
+## # of participants: 24
+# date starts and end
+cat('Data -Start date: ', min(combined_data_df$activity_date),
+    ' -End date',max(combined_data_df$activity_date ))
+## Data -Start date:  4/12/2016  -End date 5/9/2016
+#_______Compared Sleep duration vs Steps taken________
+
+sleep_vs_steps_df <- combined_data_df %>%
+  group_by(id) %>%
+  summarise( 
+    avg_steps_t = median(total_steps),
+    avg_a_sleep = median(total_minutes_asleep)
+  )
+head(sleep_vs_steps_df) # lets see a tibble here
+## # A tibble: 6 × 3
+##           id avg_steps_t avg_a_sleep
+##        <dbl>       <dbl>       <dbl>
+## 1 1503960366      12207         340 
+## 2 1644430081       6684.        130.
+## 3 1844505072       2237         644 
+## 4 1927972279        152         398 
+## 5 2026352035       5528         516.
+## 6 2320127002       5057          61
+
+
+```r
+
+# Scatter plot with outliers in red
+ggplot(data = sleep_vs_steps_df, aes(x = avg_steps_t, y = avg_a_sleep)) +
+  geom_point(aes(color = outlier), size = 3) +
+  geom_smooth() +
+  labs(title = "Scatter Plot: Average Steps vs. Average Sleep",
+       x = "Average Steps ", y = "Average Sleep") +
+  scale_color_manual(values = c("black", 'red'))  + theme_bw()
+
+
+```
+
+![image](https://github.com/user-attachments/assets/770f895c-fc16-42ec-994c-1d9b01407b84)
+
+
+```r
+# Density design
+ggplot(data = sleep_vs_steps_df, aes(x = avg_steps_t, y = avg_a_sleep)) +
+  geom_point(alpha = 0.5) +
+  geom_density_2d() +
+  labs(title = "Density Plot: Average Steps vs. Average Sleep",
+       x = "Average Steps", y = "Average Sleep") +
+  theme_bw()
+
+```
+![image](https://github.com/user-attachments/assets/63c88c6f-8d05-40fd-b3c4-d9e35d48f8e0)
+
+The study on the relationship between sleep duration and total steps demonstrates a weak positive correlation. The prevalence of outliers, in red, indicates a significant data spread, showing us the need for more information, particularly when referencing the density chart.
+
+
+
+
+
+## Recommendations
+Bellabeat should provide applications designed specifically for different genders can be highly beneficial in promoting health and wellness, addressing the distinct needs and challenges faced by individuals of different genders.
+
+Bellabeat app ahould ask users questions about their gender, weight, height, and general health upon installation in order to personalize their app experience and tailoring app features to individual needs. However, be transparent about how it will be used. Users maybe more willing to share information if they understand its purpose and how it benefits them.
+
+
+How can these trends help influence Bellabeat marketing strategy?
+
+We can make marketing recommendations based on what we have learned
+about how customers are currently using smart fitness devices:
+
+1.  Very few customers utilized the weight log feature, so this does not
+    appear to be a selling point. Focus on marketing other features such
+    as activity, sleep, and steps tracking, and consider further
+    research into how to make the weight log feature more marketable
+
+2.  Our data shows that when active, participants engaged the most in
+    “light” activity and did not have many “very active” minutes each
+    day. The company could add a “level up” feature in which
+    participants can earn points based on time spent being active, with
+    higher levels of activity earning more points. This could motivate
+    users to engage in active minutes more often.
+
+3.  There’s about a 1000 step decrease on Sundays compared to the other
+    days of the week. A notification on Sunday mornings with a goal to
+    hit a certain number of steps, along with a reward for hitting a
+    7-day streak could help close this gap and encourage customers to
+    use the device all days of the week.
+
+4.  Based on data showing the most usage around 6pm, it seems likely
+    most users have typical work hours during the day and get most of
+    their steps in after work. An ad targeted towards working adults
+    focused on easily tracking steps throughout their busy days could be
+    effective. A reminder notification around 12pm and 8pm can encourage
+    users to increase their activity levels during other break times
+    such as lunch and after dinner as well.
+
+5.  On average, participants got less than the CDC recommended 7 hours
+    of sleep per night. Continue marketing the device’s sleep tracking
+    feature as participants who are not getting enough sleep may want a
+    way to track their sleep patterns. Consider marketing along with a
+    meditation app or habit tracker.
